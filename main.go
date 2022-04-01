@@ -21,11 +21,24 @@ func main() {
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
 
+	// inputLogin := user.LoginUserInput{
+	// 	Email:    "Hanifridwan40@gmail.com",
+	// 	Password: "Hanif1234.,!",
+	// }
+	// user, err := userService.LoginUserInput(inputLogin)
+	// if err != nil {
+	// 	fmt.Println("Terjadi Kesalahan!")
+	// 	fmt.Println(err.Error())
+	// }
+	// fmt.Println("Selamat Datang", user.Name)
+	// fmt.Println("Anda Berhasil Login")
+
 	userHandler := handler.NewUserHandler(userService)
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
 
 	api.POST("/users", userHandler.RegisterUser)
+	api.POST("/sessions", userHandler.LoginUser)
 	router.Run()
 }
