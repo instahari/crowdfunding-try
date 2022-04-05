@@ -20,6 +20,7 @@ func main() {
 
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
+	// userService.UploadAvatar(3, "images/1-profile.jpg")
 
 	userHandler := handler.NewUserHandler(userService)
 
@@ -29,5 +30,6 @@ func main() {
 	api.POST("/users", userHandler.RegisterUser)
 	api.POST("/sessions", userHandler.LoginUser)
 	api.POST("/email_checking", userHandler.CheckEmailAvailable)
+	api.POST("/avatars", userHandler.UploadAvatar)
 	router.Run()
 }

@@ -3,7 +3,9 @@ package handler
 import (
 	"crowdfunding/helper"
 	"crowdfunding/user"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +24,6 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	// struct diatas kita passing sebagai parameter service
 
 	var input user.RegisterUserInput
-
 	err := c.ShouldBindJSON(&input)
 
 	if err != nil {
@@ -123,4 +124,48 @@ func (h *userHandler) CheckEmailAvailable(c *gin.Context) {
 
 	response := helper.APIResponse(metaMessage, http.StatusOK, "success", data)
 	c.JSON(http.StatusUnprocessableEntity, response)
+}
+
+func (h *userHandler) UploadAvatar(c *gin.Context) {
+	// Input User
+	// Simpan Gambar dalam folder "images/"
+	// panggil repo melalui service
+	// - JWT (sementara menggunakan hardcode, seakan akan user login ID = 3)
+	// repo ambil data user yang data ID = 3
+	// repo update data user dan simpan lokasi gambar
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.APIResponse("Failed to Upload Avatar Image", http.StatusBadRequest, "error", data)
+
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	// Seharusnya didapatkan dari JWT
+	userID := 1
+	date := time.Now()
+
+	path := fmt.Sprintf("images/avatar/%d-%s%s", userID, date.Format("20060102_150405"), file.Filename)
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.APIResponse("Failed to Upload Avatar Image", http.StatusBadRequest, "error", data)
+
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	_, err = h.userService.UploadAvatar(userID, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.APIResponse("Failed to Upload Avatar Image", http.StatusBadRequest, "error", data)
+
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	data := gin.H{"is_uploaded": true}
+	response := helper.APIResponse("Successfully Uploaded Avatar", http.StatusOK, "success", data)
+
+	c.JSON(http.StatusOK, response)
 }
