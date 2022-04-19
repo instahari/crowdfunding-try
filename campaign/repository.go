@@ -3,8 +3,8 @@ package campaign
 import "gorm.io/gorm"
 
 type Repository interface {
-	GetAll() ([]Campaign, error)
-	GetByUserID(userID int) ([]Campaign, error)
+	FindAllCampaign() ([]Campaign, error)
+	FindByUserIDCampaign(userID int) ([]Campaign, error)
 }
 
 type repository struct {
@@ -15,7 +15,7 @@ func NewRepository(db *gorm.DB) *repository {
 	return &repository{db}
 }
 
-func (r *repository) GetAll() ([]Campaign, error) {
+func (r *repository) FindAllCampaign() ([]Campaign, error) {
 	var campaigns []Campaign
 	err := r.db.Preload("CampaignImages", "campaign_images.is_primary = 1").Find(&campaigns).Error
 
@@ -25,7 +25,7 @@ func (r *repository) GetAll() ([]Campaign, error) {
 	return campaigns, nil
 }
 
-func (r *repository) GetByUserID(userID int) ([]Campaign, error) {
+func (r *repository) FindByUserIDCampaign(userID int) ([]Campaign, error) {
 	var campaigns []Campaign
 	err := r.db.Where("user_id = ?", userID).Preload("CampaignImages", "campaign_images.is_primary = 1").Find(&campaigns).Error
 	if err != nil {
