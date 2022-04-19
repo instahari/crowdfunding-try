@@ -2,9 +2,11 @@ package main
 
 import (
 	"crowdfunding/auth"
+	"crowdfunding/campaign"
 	"crowdfunding/handler"
 	"crowdfunding/helper"
 	"crowdfunding/user"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -24,10 +26,19 @@ func main() {
 	}
 
 	userRepository := user.NewRepository(db)
+	campaignRepository := campaign.NewRepository(db)
+
+	campaigns, err := campaignRepository.GetAll()
+	for _, campaign := range campaigns {
+		fmt.Println(campaign.Name)
+		if len(campaign.CampaignImages) > 0 {
+			fmt.Println(campaign.CampaignImages[0].FileName)
+		}
+
+	}
+
 	userService := user.NewService(userRepository)
 	authService := auth.NewService()
-
-	// fmt.Println(authService.GenerateToken(4))
 
 	userHandler := handler.NewUserHandler(userService, authService)
 
@@ -40,8 +51,6 @@ func main() {
 	api.POST("/avatars", authMiddleware(userService, authService), userHandler.UploadAvatar)
 	router.Run()
 }
-
-
 
 func authMiddleware(userService user.Service, authService auth.Service) gin.HandlerFunc {
 
